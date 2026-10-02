@@ -39,3 +39,19 @@ Real problems hit during development, with cause → fix → lesson.
 - Fix: copy `backend/.env.example` → `backend/.env`, fill values, keep the
   JSON file next to it (also gitignored).
 - Lesson: `.env.example` is the contract; real `.env` never gets committed.
+
+## 6. Backend rewritten to Atlas Data API by another agent — reverted
+
+- Cause: a separate AI agent "fixed" the Mongoose connection problem by
+  migrating `taskService.ts`/`db.ts`/`server.ts`/`.env.example` to the Atlas
+  Data API (HTTPS). This broke the assignment architecture (Node + Express +
+  Mongoose + MongoDB, per requirements) and crashed at boot because
+  `DATA_API_URL`/`DATA_API_KEY` were never set — and Data API is EOL since
+  2025-09-30 anyway.
+- Fix: restored all four files to the Mongoose implementation
+  (`git diff` showed exactly the 4 touched files; `backend/test-mongo.ts`
+  temp file removed). Verified with `npx tsc --noEmit` (clean) and
+  `npx jest --runInBand` (3/3 pass).
+- Lesson: fix the connection, never silently replace the architecture.
+  Compass connecting from the same machine proves the URI/cluster/network are
+  fine — the fault is in Node's path (firewall/VPN/proxy), not the data layer.
